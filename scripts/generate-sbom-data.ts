@@ -50,6 +50,18 @@ async function main() {
 
   if (!env || !["production", "staging", "develop"].includes(env)) {
     console.log(`Skipping SBOM fetching in ${env} environment.`);
+
+    // Create placeholder SBOM files with empty JSON objects
+    await fs.mkdir(sbomFolderPath, { recursive: true });
+    await fs.writeFile(
+      path.join(sbomFolderPath, "care_fe-sbom.json"),
+      JSON.stringify({}),
+    );
+    await fs.writeFile(
+      path.join(sbomFolderPath, "care-sbom.json"),
+      JSON.stringify({}),
+    );
+
     return;
   }
 
