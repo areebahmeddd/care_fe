@@ -46,19 +46,31 @@ const fetchSbomData = async (repo: `${string}/${string}`, retries = 3) => {
 };
 
 async function main() {
-  await fs.mkdir(sbomFolderPath, { recursive: true });
+  const env = process.env.NODE_ENV;
 
-  const feSbom = await fetchSbomData("ohcnetwork/care_fe");
-  await fs.writeFile(
-    path.join(sbomFolderPath, "care_fe-sbom.json"),
-    JSON.stringify(feSbom),
-  );
+  if (!env || !["production", "staging", "develop"].includes(env)) {
+    console.log(`Skipping SBOM fetching in ${env} environment.`);
+    return;
+  }
 
-  const beSbom = await fetchSbomData("ohcnetwork/care");
-  await fs.writeFile(
-    path.join(sbomFolderPath, "care-sbom.json"),
-    JSON.stringify(beSbom),
-  );
+  try {
+    await fs.mkdir(sbomFolderPath, { recursive: true });
+
+    const feSbom = await fetchSbomData("ohcnetwork/care_fe");
+    await fs.writeFile(
+      path.join(sbomFolderPath, "care_fe-sbom.json"),
+      JSON.stringify(feSbom),
+    );
+
+    const beSbom = await fetchSbomData("ohcnetwork/care");
+    await fs.writeFile(
+      path.join(sbomFolderPath, "care-sbom.json"),
+      JSON.stringify(beSbom),
+    );
+  } catch (error) {
+    // TODO: Show 404 on License page if SBOM data is not found
+    console.error("Error fetching SBOM data:", error);
+  }
 }
 
 main();
