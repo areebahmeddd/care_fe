@@ -25,6 +25,9 @@ const fetchSbomData = async (repo: `${string}/${string}`, retries = 3) => {
       const text = await response.text();
 
       if (response.ok) {
+        if (process.env.NODE_ENV === "preview") {
+          return text;
+        }
         try {
           return JSON.parse(text);
         } catch {
