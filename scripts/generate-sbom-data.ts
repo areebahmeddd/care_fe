@@ -22,8 +22,14 @@ const fetchSbomData = async (repo: `${string}/${string}`, retries = 3) => {
         },
       });
 
+      const text = await response.text();
+
       if (response.ok) {
-        return await response.json();
+        try {
+          return JSON.parse(text);
+        } catch {
+          throw new Error(`Invalid JSON response from ${url}: ${text}`);
+        }
       }
 
       if (attempt === retries) {
@@ -50,18 +56,6 @@ async function main() {
 
   if (!env || !["production", "staging", "develop"].includes(env)) {
     console.log(`Skipping SBOM fetching in ${env} environment.`);
-
-    // Create placeholder SBOM files with empty JSON objects
-    await fs.mkdir(sbomFolderPath, { recursive: true });
-    await fs.writeFile(
-      path.join(sbomFolderPath, "care_fe-sbom.json"),
-      JSON.stringify({}),
-    );
-    await fs.writeFile(
-      path.join(sbomFolderPath, "care-sbom.json"),
-      JSON.stringify({}),
-    );
-
     return;
   }
 
@@ -80,7 +74,6 @@ async function main() {
       JSON.stringify(beSbom),
     );
   } catch (error) {
-    // TODO: Show 404 on License page if SBOM data is not found
     console.error("Error fetching SBOM data:", error);
   }
 }
