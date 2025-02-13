@@ -25,9 +25,15 @@ export const LicensesPage = () => {
   const { t } = useTranslation();
   const [tab, setTab] = useState<"frontend" | "backend">("frontend");
 
-  const { data, isLoading } = useQuery<LicensesSbom>({
+  const { data, isLoading, isError } = useQuery<LicensesSbom>({
     queryKey: ["sbom", tab],
-    queryFn: () => fetch(sbomUrlMap[tab]).then((res) => res.json()),
+    queryFn: () =>
+      fetch(sbomUrlMap[tab]).then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch SBOM data");
+        }
+        return res.json();
+      }),
   });
 
   return (
@@ -52,7 +58,15 @@ export const LicensesPage = () => {
           </Tabs>
         </div>
 
-        {isLoading || !data ? <Loading /> : <SbomViewer data={data} />}
+        {isLoading ? (
+          <Loading />
+        ) : isError ? (
+          <div className="text-red-500">{t("sbom_not_available")}</div>
+        ) : data ? (
+          <SbomViewer data={data} />
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
