@@ -21,7 +21,7 @@ const pdfWorkerPath = path.join(
   ),
   "build",
   "pdf.worker.min.mjs",
-);
+).replace(/\\/g, "/");
 
 // Convert goal description markdown to HTML
 function getDescriptionHtml(description: string) {
